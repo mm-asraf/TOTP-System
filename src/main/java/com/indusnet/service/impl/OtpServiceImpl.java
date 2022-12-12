@@ -37,7 +37,7 @@ public class OtpServiceImpl implements IOtpService {
 	private IOtpRepository userRepository;
 	
 	
-	OtpStorage otpstr = new OtpStorage();
+	OtpStorage otpstorage = new OtpStorage();
 	OtpData otpData = new OtpData();
 	List<OtpStorage> otpList = new ArrayList<>();
 
@@ -46,7 +46,7 @@ public class OtpServiceImpl implements IOtpService {
 		super();
 		this.otpUtil = otpUtil;
 		this.userRepository = userRepository;
-		this.otpstr = otpstr;
+		this.otpstorage = otpstr;
 		this.otpData = otpData;
 		this.otpList = otpList;
 	}
@@ -73,23 +73,23 @@ public class OtpServiceImpl implements IOtpService {
 			log.info("OTP is :"+otp);
 			String totp =otpUtil.base64encode(Integer.parseInt(otp));
 			Integer messageId = otpUtil.randomValue();
-			otpstr =otpUtil.checkOtpGenerateCount(otpList, user.getTypeValue());
-			if(otpstr != null && otpstr.getCount() > 5) {
+			otpstorage =otpUtil.checkOtpGenerateCount(otpList, user.getTypeValue());
+			if(otpstorage != null && otpstorage.getCount() > 5) {
 				CompletableFuture.delayedExecutor(300, TimeUnit.SECONDS).execute(() -> {
-					OtpStorage otpstr1 = otpstr;
-					otpList.remove(otpstr);
+					OtpStorage otpstr1 = otpstorage;
+					otpList.remove(otpstorage);
 					otpstr1.setCount(0);
 					otpList.add(otpstr1);
 				});
 				throw new OtpException("you exceed the maximum number of attempt.");
 			}
 
-			if(otpstr == null) {
-				otpstr = new OtpStorage(null, null, null, 0, null, false);
+			if(otpstorage == null) {
+				otpstorage = new OtpStorage(null, null, null, 0, null, false);
 			}
-			OtpStorage otpStorage = new OtpStorage(totp, LocalDateTime.now(),messageId,otpstr.getCount()+1,user.getTypeValue(),false);
+			OtpStorage otpStorage = new OtpStorage(totp, LocalDateTime.now(),messageId,otpstorage.getCount()+1,user.getTypeValue(),false);
 			log.info("OTP storage is :"+otpStorage);
-			otpList.remove(otpstr);
+			otpList.remove(otpstorage);
 			otpList.add(otpStorage);
 			CompletableFuture.delayedExecutor(600, TimeUnit.SECONDS).execute(() -> otpList.remove(otpStorage));
 			log.info("otpId is "+messageId);
@@ -206,23 +206,23 @@ public class OtpServiceImpl implements IOtpService {
 			log.info("OTP is "+otp);
 			String totp =otpUtil.base64encode(Integer.parseInt(otp));
 			int otpId = otpUtil.randomValue();
-			otpstr =otpUtil.checkOtpGenerateCount(otpList, resendRequest.getTypeValue());
-			if(otpstr != null && otpstr.getCount() > 4) {
+			otpstorage =otpUtil.checkOtpGenerateCount(otpList, resendRequest.getTypeValue());
+			if(otpstorage != null && otpstorage.getCount() > 4) {
 				CompletableFuture.delayedExecutor(300, TimeUnit.SECONDS).execute(() -> {
-					OtpStorage otpstr1 = otpstr;
-					otpList.remove(otpstr);
+					OtpStorage otpstr1 = otpstorage;
+					otpList.remove(otpstorage);
 					otpstr1.setCount(0);
 					otpList.add(otpstr1);
 				});
 				throw new OtpException("your service is block for 2mins and resend after 5mins");
 			}
 
-			if(otpstr == null) {
-				otpstr = new OtpStorage(null, null, null, 0, null, false);
+			if(otpstorage == null) {
+				otpstorage = new OtpStorage(null, null, null, 0, null, false);
 			}
-			OtpStorage otpStorage = new OtpStorage(totp, LocalDateTime.now(),otpId,otpstr.getCount()+1,resendRequest.getTypeValue(),false);
+			OtpStorage otpStorage = new OtpStorage(totp, LocalDateTime.now(),otpId,otpstorage.getCount()+1,resendRequest.getTypeValue(),false);
 			log.info("OTP storage :"+otpStorage);
-			otpList.remove(otpstr);
+			otpList.remove(otpstorage);
 			otpList.add(otpStorage);
 			CompletableFuture.delayedExecutor(600, TimeUnit.SECONDS).execute(() -> otpList.remove(otpStorage));		
 			log.info("OTP id is "+otpId);
